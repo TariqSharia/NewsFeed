@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="supportedCountriesNames">
+        <item name = "ar" type="string">Argentina</item>
+        <item name = "am" type="string">Armenia</item>
+        <item name = "au" type="string">Australia</item>
+        <item name = "at" type="string">Austria</item>
+        <item name = "by" type="string">Belarus</item>
+        <item name = "be" type="string">Belgium</item>
+        <item name = "bo" type="string">Bolivia</item>
+        <item name = "br" type="string">Brazil</item>
+        <item name = "bg" type="string">Bulgaria</item>
+        <item name = "ca" type="string">Canada</item>
+        <item name = "cl" type="string">Chile</item>
+        <item name = "cn" type="string">China</item>
+        <item name = "co" type="string">Colombia</item>
+        <item name = "hr" type="string">Croatia</item>
+        <item name = "cz" type="string">Czechia</item>
+        <item name = "ec" type="string">Ecuador</item>
+        <item name = "eg" type="string">Egypt</item>
+        <item name = "fr" type="string">France</item>
+        <item name = "de" type="string">Germany</item>
+        <item name = "gr" type="string">Greece</item>
+        <item name = "hn" type="string">Honduras</item>
+        <item name = "hk" type="string">Hong Kong</item>
+        <item name = "in" type="string">India</item>
+        <item name = "id" type="string">Indonesia</item>
+        <item name = "ir" type="string">Iran</item>
+        <item name = "ie" type="string">Ireland</item>
+        <item name = "il" type="string">Israel</item>
+        <item name = "it" type="string">Italy</item>
+        <item name = "jp" type="string">Japan</item>
+        <item name = "kr" type="string">Korea</item>
+        <item name = "mx" type="string">Mexico</item>
+        <item name = "nl" type="string">Netherlands</item>
+        <item name = "nz" type="string">New Zealand</item>
+        <item name = "ni" type="string">Nicaragua</item>
+        <item name = "pk" type="string">Pakistan</item>
+        <item name = "pa" type="string">Panama</item>
+        <item name = "pe" type="string">Peru</item>
+        <item name = "pl" type="string">Poland</item>
+        <item name = "pt" type="string">Portugal</item>
+        <item name = "qa" type="string">Qatar</item>
+        <item name = "ro" type="string">Romania</item>
+        <item name = "ru" type="string">Russia</item>
+        <item name = "sa" type="string">Saudi Arabia</item>
+        <item name = "za" type="string">South Africa</item>
+        <item name = "es" type="string">Spain</item>
+        <item name = "ch" type="string">Switzerland</item>
+        <item name = "sy" type="string">Syria</item>
+        <item name = "tw" type="string">Taiwan</item>
+        <item name = "th" type="string">Thailand</item>
+        <item name = "tr" type="string">Turkey</item>
+        <item name = "ua" type="string">Ukraine</item>
+        <item name = "gb" type="string">United Kingdom</item>
+        <item name = "us" type="string">United States Of America</item>
+        <item name = "uy" type="string">Uruguay</item>
+        <item name = "ve" type="string">Venezuela</item>
+    </array>
+</resources>
