@@ -14,10 +14,10 @@
         tools:layout_editor_absoluteY="7dp" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Button"
+        android:text="Get News"
         tools:layout_editor_absoluteX="161dp"
         tools:layout_editor_absoluteY="190dp" />
 </LinearLayout>

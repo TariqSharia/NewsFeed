@@ -6,9 +6,11 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,6 +30,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -38,6 +42,7 @@ public class NewsFragment extends Fragment {
     public NewsFragment(){}
     private static final String ERROR_MSG = "Google Play services are unavailable.";
     private static final int LOCATION_PERMISSION_REQUEST = 1;
+    List<Article> articles = new ArrayList<>();
     TextView edtInput;
     ListView lst;
 
@@ -46,9 +51,11 @@ public class NewsFragment extends Fragment {
                                 Bundle savedInstanceState) {
 
        View root = inflater.inflate(R.layout.activity_news,container,false);
-
         edtInput = root.findViewById(R.id.edtInput);
         lst = root.findViewById(R.id.lst);
+        Bundle args = getArguments();
+        if (args!=null)
+            System.out.println(getArguments().getString("code"));
         GoogleApiAvailability availability = GoogleApiAvailability.getInstance();
 
         int result = availability.isGooglePlayServicesAvailable(getActivity());
@@ -70,7 +77,7 @@ public class NewsFragment extends Fragment {
 
         // If permission is granted, fetch the last location.
         if (permission == PackageManager.PERMISSION_GRANTED) {
-            getLastLocation();
+            getNews(getLastLocation());
         } else {
             // If permission has not been granted, request permission.
             ActivityCompat.requestPermissions(getActivity(),
@@ -78,6 +85,12 @@ public class NewsFragment extends Fragment {
                     LOCATION_PERMISSION_REQUEST);
         }
     }
+
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//
+//    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
@@ -94,7 +107,8 @@ public class NewsFragment extends Fragment {
         }
     }
 
-    private void getLastLocation() {
+    private String getLastLocation() {
+        final String[] code = {""};
         FusedLocationProviderClient fusedLocationClient;
         fusedLocationClient =
                 LocationServices.getFusedLocationProviderClient(getActivity());
@@ -106,13 +120,14 @@ public class NewsFragment extends Fragment {
                     .addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
                         @Override
                         public void onSuccess(Location location) {
-                            updateTextView(location);
+                            code[0] =updateTextView(location);
                         }
                     });
         }
+        return code[0];
     }
 
-    private void updateTextView(Location location) {
+    private String updateTextView(Location location) {
         String latLongString = "No location found";
         double lat = location.getLatitude();
         double lng = location.getLongitude();
@@ -121,10 +136,10 @@ public class NewsFragment extends Fragment {
             lng = location.getLongitude();
             latLongString = "Lat:" + lat + "\nLong:" + lng;
         }
-        getCountryCode(lat,lng);
+       return getCountryCode(lat,lng);
     }
 
-    private void getCountryCode(double latitude, double longitude){
+    private String getCountryCode(double latitude, double longitude){
         Geocoder geoCoder = new Geocoder(getActivity());
         List<Address> addresses = null;
         String countryId = "";
@@ -137,57 +152,32 @@ public class NewsFragment extends Fragment {
             }
             for (int i=0;i<countryCodes.length;i++){
                 if (countryId!=null&&countryId.equals(countryCodes[i])){
-                    System.out.println("found");
-                    getNews("&locale="+countryId);
-                    return;
+                    return "&locale="+countryId.toLowerCase();
                 }
             }
             String err = "Sorry,Your country is not supported, here are some international news or you can select other county news from setting";
-            Toast.makeText(getActivity(), err,Toast.LENGTH_LONG).show();
-            getNews("");
+            final int LENGHT =5;
+            final Toast toast = Toast.makeText(getActivity(), "Sorry,Your country is not supported," +
+                    " here are some international news or you can select other county news from setting", Toast.LENGTH_LONG);
+            toast.show();
+
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    toast.cancel();
+                }
+            }, 3000);
+
         } catch (IOException e) {
             System.out.println("here we aren't");
             e.printStackTrace();
         }
-
+        return "";
     }
-    //    public void getNews(String countryCode) {
-//        // Instantiate the RequestQueue.
-//
-//        String url ="https://api.thenewsapi.com/v1/news/top?api_token=FJXHCWcAs2TSwCMPkJvb72tfAJCynSF1dnZNnkxm&locale=" + countryCode.toLowerCase();
-//
-//
-//        JsonArrayRequest jsonObjectRequest = new JsonArrayRequest
-//                (Request.Method.GET, url,
-//                        null, new Response.Listener<JSONArray>() {
-//
-//                    @Override
-//                    public void onResponse(JSONArray response) {
-//                        String cityID = "";
-//                        try {
-//                            JSONObject obj = response.getJSONObject(0);
-//
-//                            cityID = obj.getString("title");
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//
-//                        edtInput.setText(cityID);
-//                    }
-//                }, new Response.ErrorListener() {
-//
-//                    @Override
-//                    public void onErrorResponse(VolleyError error) {
-//                        // TODO: Handle error
-//
-//                    }
-//                });
-//        MySingleton.getInstance(this).addToRequestQueue(jsonObjectRequest);
-//
-//    }
-//
+
     public void getNews(String countryCode) {
-        String url ="https://api.thenewsapi.com/v1/news/top?api_token=FJXHCWcAs2TSwCMPkJvb72tfAJCynSF1dnZNnkxm" + countryCode.toLowerCase()+"&limit=1";
+        String url ="https://api.thenewsapi.com/v1/news/top?api_token=FJXHCWcAs2TSwCMPkJvb72tfAJCynSF1dnZNnkxm" + countryCode+"&limit=2";
 
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
@@ -196,25 +186,49 @@ public class NewsFragment extends Fragment {
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        String[] days;
                         try {
                             JSONArray array = response.getJSONArray("data");
-                            days = new String[array.length()];
                             for(int i = 0; i<array.length(); i++){
                                 JSONObject obj = array.getJSONObject(i);
-                                String weatherDay = "";
-                                weatherDay = "state: " + obj.getString("title") +
-                                        "\n, date: " + obj.getString("description") +
-                                        "\n, min: " + obj.getString("language") +
-                                        ", max: " + obj.getString("source");
-                                days[i] = weatherDay;
+                                Article article = new Article();
+                                article.setArticleID(obj.getString("uuid"));
+                                article.setTitle(obj.getString("title"));
+                                article.setDescription(obj.getString("description"));
+                                if (obj.has("keywords")){
+                                    article.setKeywords(obj.getString("keywords"));
+                                }else {
+                                    article.setKeywords("no Key words");
+                                }
+                                if (obj.has("snippet")) {
+                                    article.setSnippet(obj.getString("snippet"));
+                                }
+                                article.setUrl(obj.getString("url"));
+                                if (obj.has("image_url")){
+                                    article.setImage_url(obj.getString("image_url"));
+                                }else {
+                                    article.setImage_url("no image");
+                                }
+                                article.setLanguage(obj.getString("language"));
+                                article.setPublishDate(obj.getString("published_at"));
+                                article.setSource(obj.getString("source"));
+                                article.setCountry(obj.getString("locale"));
+                                ArrayList<String> list = new ArrayList<>();
+                                JSONArray array1 = new JSONArray();
+                                array1 = obj.getJSONArray("categories");
+                                if (array1!= null){
+                                    for (int j=0;j<array1.length();j++){
+                                        list.add(String.valueOf(array1.get(j)));
+                                    }
+                                }
+                                article.setCategories(list);
+                                articles.add(article);
                             }
-//                            ArrayAdapter<String> itemsAdapter =
-//                                    new ArrayAdapter<String>(MainActivity.this, android.R.layout.activity_list_item,
-//                                            days);
-//                            lst.setAdapter(itemsAdapter);
-                            for (int i=0; i<days.length;i++){
-                                edtInput.setText(days[i]+"\n\n");
+                            ArrayAdapter<Article> itemsAdapter =
+                                    new ArrayAdapter<Article>(getActivity(), android.R.layout.simple_list_item_1,
+                                            articles);
+                            lst.setAdapter(itemsAdapter);
+                            for (int i=0; i<articles.size();i++){
+                                edtInput.setText(articles.get(i)+"\n\n");
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
