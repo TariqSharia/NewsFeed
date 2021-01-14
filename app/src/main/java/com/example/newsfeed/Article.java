@@ -142,6 +142,7 @@ public class Article {
                 ", source='" + source + '\'' +
                 ", keywords=" + keywords +
                 ", categories=" + categories +
+                ", country=" + country +
                 '}';
     }
 }
