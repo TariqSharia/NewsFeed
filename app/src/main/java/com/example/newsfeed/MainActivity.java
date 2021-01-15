@@ -130,16 +130,16 @@ public class MainActivity extends AppCompatActivity {
                     .addOnSuccessListener(this, new OnSuccessListener<Location>() {
                         @Override
                         public void onSuccess(Location location) {
-                            code[0] =updateTextView(location);
+                            code[0] =getLongLat(location);
                         }
                     });
         }
         return code[0];
     }
 
-    private String updateTextView(Location location) {
-        double lat = location.getLatitude();
-        double lng = location.getLongitude();
+    private String getLongLat(Location location) {
+        double lat =0;
+        double lng =0;
         if (location != null) {
             lat = location.getLatitude();
             lng = location.getLongitude();
