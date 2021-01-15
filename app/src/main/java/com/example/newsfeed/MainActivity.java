@@ -12,11 +12,7 @@ import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
-
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -29,36 +25,25 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class MainActivity extends AppCompatActivity {
     private static final String ERROR_MSG = "Google Play services are unavailable.";
     private static final int LOCATION_PERMISSION_REQUEST = 1;
     List<Article> articles = new ArrayList<>();
-    TextView edtInput;
-    ListView lst;
+    boolean setting = false;
+    RecyclerView recyclerView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        GoogleApiAvailability availability = GoogleApiAvailability.getInstance();
-
-        int result = availability.isGooglePlayServicesAvailable(this);
-        if (result != ConnectionResult.SUCCESS) {
-            if (!availability.isUserResolvableError(result)) {
-                Toast.makeText(this, ERROR_MSG, Toast.LENGTH_LONG).show();
-            }
-        }
-
-        edtInput = findViewById(R.id.edtInput);
-        lst = findViewById(R.id.lst);
+        recyclerView = findViewById(R.id.news_recycler);
     }
 
     @Override
@@ -66,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == 1) {
+            setting = true;
             if(resultCode == Activity.RESULT_OK){
                 String code=data.getStringExtra("code");
                 getNews(code);
@@ -92,16 +78,27 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        int permission = ActivityCompat.checkSelfPermission(this,
-                android.Manifest.permission.ACCESS_FINE_LOCATION);
+        if (!setting){
+            GoogleApiAvailability availability = GoogleApiAvailability.getInstance();
 
-        if (permission == PackageManager.PERMISSION_GRANTED) {
-            getNews(getLastLocation());
-        } else {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    LOCATION_PERMISSION_REQUEST);
+            int result = availability.isGooglePlayServicesAvailable(this);
+            if (result != ConnectionResult.SUCCESS) {
+                if (!availability.isUserResolvableError(result)) {
+                    Toast.makeText(this, ERROR_MSG, Toast.LENGTH_LONG).show();
+                }
+            }
+            int permission = ActivityCompat.checkSelfPermission(this,
+                    android.Manifest.permission.ACCESS_FINE_LOCATION);
+
+            if (permission == PackageManager.PERMISSION_GRANTED) {
+                getNews(getLastLocation());
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
+                        LOCATION_PERMISSION_REQUEST);
+            }
         }
+
     }
 
 
@@ -141,13 +138,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String updateTextView(Location location) {
-        String latLongString = "No location found";
         double lat = location.getLatitude();
         double lng = location.getLongitude();
         if (location != null) {
             lat = location.getLatitude();
             lng = location.getLongitude();
-            latLongString = "Lat:" + lat + "\nLong:" + lng;
         }
         return getCountryCode(lat,lng);
     }
@@ -165,11 +160,10 @@ public class MainActivity extends AppCompatActivity {
             }
             for (int i=0;i<countryCodes.length;i++){
                 if (countryId!=null&&countryId.equals(countryCodes[i])){
-                    return "&locale="+countryId.toLowerCase();
+                    return countryId.toLowerCase();
                 }
             }
             String err = "Sorry,Your country is not supported, here are some international news or you can select other county news from setting";
-            final int LENGHT =5;
             final Toast toast = Toast.makeText(this, "Sorry,Your country is not supported," +
                     " here are some international news or you can select other county news from setting", Toast.LENGTH_LONG);
             toast.show();
@@ -190,11 +184,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void getNews(String countryCode) {
+        final String code =countryCode;
         if (!countryCode.equals("")){
             countryCode = "&locale="+countryCode;
+        }else {
+            countryCode = "&language=en";
         }
-        String url ="https://api.thenewsapi.com/v1/news/top?api_token=FJXHCWcAs2TSwCMPkJvb72tfAJCynSF1dnZNnkxm" + countryCode+"&limit=2&language=es";
-
+        String url ="https://api.thenewsapi.com/v1/news/top?api_token=FJXHCWcAs2TSwCMPkJvb72tfAJCynSF1dnZNnkxm" + countryCode;
+        System.out.println(url);
 
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest
                 (Request.Method.GET, url,
@@ -203,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
+
                             JSONArray array = response.getJSONArray("data");
                             for(int i = 0; i<array.length(); i++){
                                 JSONObject obj = array.getJSONObject(i);
@@ -237,15 +235,32 @@ public class MainActivity extends AppCompatActivity {
                                     }
                                 }
                                 article.setCategories(list);
-                                articles.add(article);
+                                boolean add = true;
+                                if (articles.size()!=0){
+                                    for (int j=0;j<articles.size();j++){
+                                        if (articles.get(j).getArticleID().equals(article.getArticleID()))
+                                            add =false;
+                                    }
+                                }
+                                if (add)
+                                    articles.add(article);
                             }
+                            ContentAdapter itemsAdapter;
+                            if (url.contains("&locale")) {
+                                System.out.println(code+ "    "+articles.size());
+                                List<Article> newsList = new ArrayList<>();
+                                for (int i = 0; i < articles.size(); i++) {
+                                    System.out.println(articles.get(i).getCountry());
+                                    if (articles.get(i).getCountry().equals(code)) {
+                                        newsList.add(articles.get(i));
+                                    }
+                                }
 
-                            ArrayAdapter<Article> itemsAdapter = new ArrayAdapter<Article>(MainActivity.this,
-                                    android.R.layout.simple_list_item_1,articles);
-                            lst.setAdapter(itemsAdapter);
-                            for (int i=0; i<articles.size();i++){
-                                edtInput.setText(articles.get(i)+"\n\n");
+                                itemsAdapter = new ContentAdapter(newsList);
+                            }else{
+                                itemsAdapter = new ContentAdapter(articles);
                             }
+                            recyclerView.setAdapter(itemsAdapter);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -260,6 +275,7 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 });
+
         MySingleton.getInstance(this).addToRequestQueue(jsonObjectRequest);
     }
 }

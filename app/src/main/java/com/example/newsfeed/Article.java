@@ -1,9 +1,7 @@
 package com.example.newsfeed;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 public class Article {
     private String articleID, title, description,snippet,url, image_url,language, publishDate,source,keywords,country;
@@ -21,7 +19,7 @@ public class Article {
         this.url = url;
         this.image_url = image_url;
         this.language = language;
-        this.publishDate = getPublishDate(publishDate);
+        this.publishDate = publishDate;
         this.source = source;
         this.keywords = keywords;
         this.categories = categories;
@@ -91,13 +89,8 @@ public class Article {
         this.language = language;
     }
 
-    public String getPublishDate(String publishDate) throws ParseException {
-        Date date = new SimpleDateFormat("MM/dd/yyyy").parse(publishDate.split("T")[0]);
-        return date.toString();
-    }
-
     public String getPublishDate() {
-        return publishDate;
+        return this.publishDate;
     }
 
     public void setPublishDate(String publishDate) {
